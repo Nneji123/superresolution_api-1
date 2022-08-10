@@ -37,8 +37,7 @@ def get_watermarked(pil_image: Image) -> Image:
         output = image.copy()
         cv2.addWeighted(overlay, 0.5, output, 1.0, 0, output)
         rgb_image = cv2.cvtColor(output, cv2.COLOR_BGR2RGB)
-        final_image = Image.fromarray(rgb_image)
-        return final_image
+        return Image.fromarray(rgb_image)
     except:
         # Don't want this to crash everything, so let's just not watermark the image for now.
         return pil_image
@@ -59,8 +58,7 @@ class ModelImageVisualizer:
 
     def _get_image_from_url(self, url: str) -> Image:
         response = requests.get(url, timeout=30, headers={'user-agent':'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/62.0.3202.94 Safari/537.36'})
-        img = PIL.Image.open(BytesIO(response.content)).convert('RGB')
-        return img
+        return PIL.Image.open(BytesIO(response.content)).convert('RGB')
 
     def plot_transformed_image_from_url(
         self,
@@ -175,10 +173,7 @@ class ModelImageVisualizer:
             orig_image, orig_image, render_factor=render_factor,post_process=post_process
         )
 
-        if watermarked:
-            return get_watermarked(filtered_image)
-
-        return filtered_image
+        return get_watermarked(filtered_image) if watermarked else filtered_image
 
     def _plot_image(
         self,
@@ -196,7 +191,7 @@ class ModelImageVisualizer:
             plt.text(
                 10,
                 10,
-                'render_factor: ' + str(render_factor),
+                f'render_factor: {render_factor}',
                 color='white',
                 backgroundcolor='black',
             )
@@ -250,7 +245,7 @@ class VideoColorizer:
         bwframes_folder.mkdir(parents=True, exist_ok=True)
         self._purge_images(bwframes_folder)
         ffmpeg.input(str(source_path)).output(
-            str(bwframe_path_template), format='image2', vcodec='mjpeg', qscale=0
+            bwframe_path_template, format='image2', vcodec='mjpeg', qscale=0
         ).run(capture_stdout=True)
 
     def _colorize_raw_frames(
@@ -283,11 +278,14 @@ class VideoColorizer:
         fps = self._get_fps(source_path)
 
         ffmpeg.input(
-            str(colorframes_path_template),
+            colorframes_path_template,
             format='image2',
             vcodec='mjpeg',
             framerate=fps,
-        ).output(str(colorized_path), crf=17, vcodec='libx264').run(capture_stdout=True)
+        ).output(str(colorized_path), crf=17, vcodec='libx264').run(
+            capture_stdout=True
+        )
+
 
         result_path = self.result_folder / source_path.name
         if result_path.exists():
@@ -318,7 +316,7 @@ class VideoColorizer:
                 + str(result_path)
                 + '"'
             )
-        print('Video created here: ' + str(result_path))
+        print(f'Video created here: {str(result_path)}')
         return result_path
 
     def colorize_from_url(
@@ -349,8 +347,9 @@ class VideoColorizer:
     ) -> Path:
         if not source_path.exists():
             raise Exception(
-                'Video at path specfied, ' + str(source_path) + ' could not be found.'
+                f'Video at path specfied, {str(source_path)} could not be found.'
             )
+
         self._extract_raw_frames(source_path)
         self._colorize_raw_frames(
             source_path, render_factor=render_factor,post_process=post_process,watermarked=watermarked
@@ -403,8 +402,7 @@ def get_stable_image_colorizer(
 ) -> ModelImageVisualizer:
     learn = gen_inference_wide(root_folder=root_folder, weights_name=weights_name)
     filtr = MasterFilter([ColorizerFilter(learn=learn)], render_factor=render_factor)
-    vis = ModelImageVisualizer(filtr, results_dir=results_dir)
-    return vis
+    return ModelImageVisualizer(filtr, results_dir=results_dir)
 
 
 def get_artistic_image_colorizer(
@@ -415,8 +413,7 @@ def get_artistic_image_colorizer(
 ) -> ModelImageVisualizer:
     learn = gen_inference_deep(root_folder=root_folder, weights_name=weights_name)
     filtr = MasterFilter([ColorizerFilter(learn=learn)], render_factor=render_factor)
-    vis = ModelImageVisualizer(filtr, results_dir=results_dir)
-    return vis
+    return ModelImageVisualizer(filtr, results_dir=results_dir)
 
 
 def show_image_in_notebook(image_path: Path):

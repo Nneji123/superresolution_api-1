@@ -17,7 +17,7 @@ def _noisify(
     )
     noise_count = int(img_size * pct_pixels)
 
-    for ii in range(noise_count):
+    for _ in range(noise_count):
         yy = random.randrange(h)
         xx = random.randrange(w)
         noise = random.randrange(-noise_range, noise_range) / 255.0

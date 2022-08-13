@@ -23,8 +23,8 @@ def custom_conv_layer(
 ):
     "Create a sequence of convolutional (`ni` to `nf`), ReLU (if `use_activ`) and batchnorm (if `bn`) layers."
     if padding is None:
-        padding = (ks - 1) // 2 if not transpose else 0
-    bn = norm_type in (NormType.Batch, NormType.BatchZero) or extra_bn == True
+        padding = 0 if transpose else (ks - 1) // 2
+    bn = norm_type in (NormType.Batch, NormType.BatchZero) or extra_bn
     if bias is None:
         bias = not bn
     conv_func = nn.ConvTranspose2d if transpose else nn.Conv1d if is_1d else nn.Conv2d

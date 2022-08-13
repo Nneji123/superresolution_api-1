@@ -83,10 +83,7 @@ class ColorizerFilter(BaseFilter):
         model_image = self._model_process(orig=filtered_image, sz=render_sz)
         raw_color = self._unsquare(model_image, orig_image)
 
-        if post_process:
-            return self._post_process(raw_color, orig_image)
-        else:
-            return raw_color
+        return self._post_process(raw_color, orig_image) if post_process else raw_color
 
     def _transform(self, image: PilImage) -> PilImage:
         return image.convert('LA').convert('RGB')

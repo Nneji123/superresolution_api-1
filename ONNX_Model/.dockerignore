@@ -3,3 +3,5 @@ convert_to_onnx.py
 ONNX_convert.ipynb
 readme.txt
 .gitignore
+download.py
+docker-compose.yml
